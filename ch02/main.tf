@@ -14,7 +14,7 @@ resource "aws_instance" "example" {
               EOF
 
   tags = {
-    Name = "terraform-example-dyheo"
+    Name = "dyheo-tf"
   }
 }
 
