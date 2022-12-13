@@ -2,9 +2,12 @@ provider "aws" {
 	region = "ap-northeast-2"
 }
 
+/*
 resource "aws_instance" "example" {
-	ami = "ami-0eddbd81024d3fbdd"
-	instance_type = "t3.micro"
+	#ami = "ami-0eddbd81024d3fbdd"
+  ami = "ami-06eea3cd85e2db8ce"
+  key_name = "dy-cloud-dev.pem"
+	instance_type = "t2.micro"
   vpc_security_group_ids = [aws_security_group.instance.id]
 
   count = length(data.aws_subnets.default.ids)
@@ -20,6 +23,7 @@ resource "aws_instance" "example" {
     Name = "dy-tf-instance"
   }
 }
+*/
 
 ## TAG NAME 으로 subnet 을 가져온다.
 data "aws_subnets" "default" {
@@ -44,6 +48,20 @@ resource "aws_security_group" "instance" {
     protocol = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  #ingress {
+  #  from_port = 22
+  #  to_port = 22
+  #  protocol = "tcp"
+  #  cidr_blocks = ["0.0.0.0/0"]
+  #}
+
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
 variable "server_port" {
@@ -52,16 +70,21 @@ variable "server_port" {
   default = 8080
 }
 
+/*
 output "public_ip" {
   value = aws_instance.example[0].public_ip
   description = "The public IP address of the web server"
 }
+*/
 
 # ASG setting
 resource "aws_launch_configuration" "example" {
-  image_id = "ami-0eddbd81024d3fbdd"
-  instance_type = "t3.micro"
+  image_id  = "ami-06eea3cd85e2db8ce"
   security_groups = [aws_security_group.instance.id]
+  #key_name = "dy-cloud-dev.pem"
+  key_name = "dy-cloud-dev"
+	instance_type = "t2.micro"
+ 
 
   user_data = <<-EOF
               #!/bin/bash
