@@ -7,6 +7,9 @@ resource "aws_instance" "example" {
 	instance_type = "t3.micro"
   vpc_security_group_ids = [aws_security_group.instance.id]
 
+  count = length(data.aws_subnets.default.ids)
+  subnet_id = element(tolist(data.aws_subnets.default.ids), count.index)
+
   user_data = <<-EOF
               #!/bin/bash
               echo "Hello, World" > index.html
@@ -18,8 +21,22 @@ resource "aws_instance" "example" {
   }
 }
 
+## TAG NAME 으로 subnet 을 가져온다.
+data "aws_subnets" "default" {
+  #vpc_id = data.aws_vpc.default.id ## deprecated option
+  filter {
+    name = "tag:Name"
+    values = ["dy-tf-sb-public-*"]
+  }
+  filter {
+    name = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+}
+
 resource "aws_security_group" "instance" {
   name = "dy-tf-sg"
+  vpc_id = data.aws_vpc.default.id
 
   ingress {
     from_port = var.server_port
@@ -36,7 +53,7 @@ variable "server_port" {
 }
 
 output "public_ip" {
-  value = aws_instance.example.public_ip
+  value = aws_instance.example[0].public_ip
   description = "The public IP address of the web server"
 }
 
@@ -59,7 +76,7 @@ resource "aws_launch_configuration" "example" {
 
 resource "aws_autoscaling_group" "example" {
   launch_configuration = aws_launch_configuration.example.name
-  vpc_zone_identifier = data.aws_subnet_ids.default.ids
+  vpc_zone_identifier = data.aws_subnets.default.ids
 
   target_group_arns = [aws_lb_target_group.asg.arn]
   health_check_type = "ELB"
@@ -75,19 +92,24 @@ resource "aws_autoscaling_group" "example" {
 }
 
 data "aws_vpc" "default" {
-  default = true
+  #default = true
+  tags = {
+    Name = "dy-tf-vpc"
+  }
 }
 
+/* default 가 아니라 위에것으로 대체
 data "aws_subnet_ids" "default" {
   vpc_id = data.aws_vpc.default.id
 }
+*/
 
 
 # ALB setting
 resource "aws_lb" "example" {
   name = "dy-tf-lb"
   load_balancer_type = "application"
-  subnets = data.aws_subnet_ids.default.ids
+  subnets = data.aws_subnets.default.ids
 
   security_groups = [aws_security_group.alb.id]
 }
@@ -111,6 +133,8 @@ resource "aws_lb_listener" "http" {
 
 resource "aws_security_group" "alb" {
   name = "dy-tf-alb"
+
+  vpc_id = data.aws_vpc.default.id
 
   # permission traffic
   ingress {
