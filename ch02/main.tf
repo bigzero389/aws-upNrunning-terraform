@@ -38,29 +38,33 @@ data "aws_subnets" "default" {
   }
 }
 
+resource "aws_security_group_rule" "service_in" {
+  type = "ingress"
+  from_port = var.server_port
+  to_port = var.server_port
+  protocol = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.instance.id
+}
+
+resource "aws_security_group_rule" "service_out" {
+  type = "egress"
+  from_port = 0
+  to_port = 0
+  protocol = "-1"
+  cidr_blocks = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.instance.id
+}
+
 resource "aws_security_group" "instance" {
   name = "dy-tf-sg"
   vpc_id = data.aws_vpc.default.id
 
   ingress {
-    from_port = var.server_port
-    to_port = var.server_port
+    from_port = 22
+    to_port = 22
     protocol = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  #ingress {
-  #  from_port = 22
-  #  to_port = 22
-  #  protocol = "tcp"
-  #  cidr_blocks = ["0.0.0.0/0"]
-  #}
-
-  egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["211.206.114.80/32"]
   }
 }
 
@@ -70,12 +74,18 @@ variable "server_port" {
   default = 8080
 }
 
-/*
+data "aws_instances" "example" {
+  filter {
+    name = "tag:Name"
+    values = ["dy-tf-asg-ex"]
+  }
+}
+
 output "public_ip" {
-  value = aws_instance.example[0].public_ip
+  # value = "${join(",", aws_autoscaling_group.example.*.public_ip)}"
+  value = data.aws_instances.example.public_ips
   description = "The public IP address of the web server"
 }
-*/
 
 # ASG setting
 resource "aws_launch_configuration" "example" {
