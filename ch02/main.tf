@@ -89,6 +89,7 @@ output "public_ip" {
 
 # ASG setting
 resource "aws_launch_configuration" "example" {
+  name = "dy-tf-launch-config"
   image_id  = "ami-06eea3cd85e2db8ce"
   security_groups = [aws_security_group.instance.id]
   #key_name = "dy-cloud-dev.pem"
@@ -108,6 +109,7 @@ resource "aws_launch_configuration" "example" {
 }
 
 resource "aws_autoscaling_group" "example" {
+  name = "dy-tf-asg"
   launch_configuration = aws_launch_configuration.example.name
   vpc_zone_identifier = data.aws_subnets.default.ids
 
