@@ -1,5 +1,4 @@
 provider "aws" {
-    #region = "us-east-2"
     region = "ap-northeast-2"
 }
 
@@ -8,7 +7,8 @@ resource "aws_s3_bucket" "tf_state" {
 
     # 실로 S3 버킷 삭제방지
     lifecycle {
-        prevent_destroy = true
+        # prevent_destroy = true
+        prevent_destroy = false
     }
 
     # version 관리 
@@ -57,29 +57,4 @@ resource "aws_dynamodb_table" "tf_locks" {
       name = "LockID"
       type = "S"
     }
-}
-
-# terraform 백엔드 구성
-# 백엔드를 외부키로 전달해서 실행 
-# terraform init -backend-config-backend.hcl
-terraform {
-  backend "s3" {
-    # bucket = "dy-tf-state"
-    # key = "global/s3/terraform.tfstate"
-    # region = "ap-northeast-2"
-
-    # dynamodb_table = "dy-tf-locks"
-    # encrypt = true
-    key = "global/s3/terraform.tfstate"
-  }
-}
-
-output "s3_bucket_arn" {
-    value = aws_s3_bucket.tf_state.arn
-    description = "The ARN of bigzero tf s3"
-}
-
-output "dynamodb_table" {
-    value = aws_dynamodb_table.tf_locks.name
-    description = "The name of the bigzero DynamoDB table"
 }

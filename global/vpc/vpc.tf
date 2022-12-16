@@ -167,58 +167,13 @@ output "aws_vpc" {
   value = aws_vpc.this.id
 }
 
+terraform {
+  backend "s3" {
+    bucket = "dy-tf-state"
+    key = "global/vpc/terraform.tfstate"
+    region = "ap-northeast-2"
 
-/*
-# AWS Security Group
-resource "aws_security_group" "sg-core" {
-  name        = "${local.Service}-sg-core"
-  description = "${local.Service} security group"
-  vpc_id      = "${aws_vpc.this.id}"
-
-  ingress = [
-    {
-      description      = "ping"
-      from_port = -1
-      to_port = -1
-      protocol = "icmp"
-      cidr_blocks      = ["125.177.68.23/32", "211.206.114.80/32", "10.77.0.0/16"]
-      ipv6_cidr_blocks = []
-      prefix_list_ids  = []
-      security_groups  = []
-      self = false
-    },
-    {
-      description      = "SSH open"
-      from_port        = 22
-      to_port          = 22
-      protocol         = "tcp"
-      type             = "ssh"
-      cidr_blocks      = ["125.177.68.23/32", "211.206.114.80/32", "10.77.0.0/16"]
-      ipv6_cidr_blocks = []
-      prefix_list_ids  = []
-      security_groups  = []
-      self = false
-    }
-  ]
-
-  egress = [
-    {
-      from_port        = 0
-      to_port          = 0
-      protocol         = "-1"
-      cidr_blocks      = ["0.0.0.0/0"]
-      ipv6_cidr_blocks = []
-      prefix_list_ids  = []
-      security_groups  = []
-      self = false
-      description = "outbound all"
-    }
-  ]
-
-  tags = {
-    Name = "${local.Service}-sg-core",
-    Creator= "${local.Creator}",
-    Group = "${local.Group}"
+    dynamodb_table = "dy-tf-locks"
+    encrypt = true
   }
 }
-*/

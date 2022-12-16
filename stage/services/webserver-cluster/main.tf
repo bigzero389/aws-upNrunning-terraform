@@ -68,23 +68,11 @@ resource "aws_security_group" "instance" {
   }
 }
 
-variable "server_port" {
-  description = "The port the server will use for HTTP request"
-  type = number
-  default = 8080
-}
-
 data "aws_instances" "example" {
   filter {
     name = "tag:Name"
     values = ["dy-tf-asg-ex"]
   }
-}
-
-output "public_ip" {
-  # value = "${join(",", aws_autoscaling_group.example.*.public_ip)}"
-  value = data.aws_instances.example.public_ips
-  description = "The public IP address of the web server"
 }
 
 # ASG setting
@@ -220,13 +208,15 @@ resource "aws_lb_listener_rule" "asg" {
   }
 }
 
-output "alb_dns_name" {
-  value = aws_lb.example.dns_name 
-  description = "The domain name of the load balance"
+# terraform 백엔드 구성
+terraform {
+  backend "s3" {
+    bucket = "dy-tf-state"
+    key = "stage/services/webserver-cluster/terraform.tfstate"
+    region = "ap-northeast-2"
+
+    dynamodb_table = "dy-tf-locks"
+    encrypt = true
+  }
 }
-
-
-
-
-
 
