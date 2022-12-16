@@ -60,14 +60,17 @@ resource "aws_dynamodb_table" "tf_locks" {
 }
 
 # terraform 백엔드 구성
+# 백엔드를 외부키로 전달해서 실행 
+# terraform init -backend-config-backend.hcl
 terraform {
   backend "s3" {
-    bucket = "dy-tf-state"
-    key = "global/s3/terraform.tfstate"
-    region = "ap-northeast-2"
+    # bucket = "dy-tf-state"
+    # key = "global/s3/terraform.tfstate"
+    # region = "ap-northeast-2"
 
-    dynamodb_table = "dy-tf-locks"
-    encrypt = true
+    # dynamodb_table = "dy-tf-locks"
+    # encrypt = true
+    key = "global/s3/terraform.tfstate"
   }
 }
 
