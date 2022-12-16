@@ -1,6 +1,6 @@
 resource "aws_instance" "example" {
   ami = "ami-06eea3cd85e2db8ce"
-  instance_type = "t2.micro"
+  instance_type = terraform.workspace == "default" ? "t2.small" : "t2.micro"
 
   tags = {
     Name = "dy-tf-instance-workspace"
