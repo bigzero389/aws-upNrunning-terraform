@@ -85,11 +85,13 @@ resource "aws_launch_configuration" "example" {
 	instance_type = "t2.micro"
  
 
-  user_data = <<-EOF
-              #!/bin/bash
-              echo "Hello, World" > index.html
-              nohup busybox httpd -f -p ${var.server_port} &
-              EOF
+  # user_data = <<-EOF
+  #             #!/bin/bash
+  #             echo "Hello, World" > index.html
+  #             nohup busybox httpd -f -p ${var.server_port} &
+  #             EOF
+  # template file 을 읽어들인 렌더링 결과를 input 으로 받음.
+  user_data = data.template_file.user_data.rendered
 
   lifecycle {
     create_before_destroy = true
@@ -208,6 +210,28 @@ resource "aws_lb_listener_rule" "asg" {
   }
 }
 
+# db 관련 정보 불러오기 데이터소스.
+data "terraform_remote_state" "db" {
+  backend = "s3"
+
+  config = {
+    bucket = "dy-tf-state"
+    key = "stage/data-stores/mysql/terraform.tfstate"
+    region = "ap-northeast-2"
+  }
+}
+
+# db 관련 정보 쉘 파일로 전달.
+data "template_file" "user_data" {
+  template = file("user-data.sh")
+
+  vars = {
+    server_port = var.server_port
+    db_address = data.terraform_remote_state.db.outputs.address
+    db_port = data.terraform_remote_state.db.outputs.port
+  }
+}
+
 # terraform 백엔드 구성
 terraform {
   backend "s3" {
@@ -219,4 +243,3 @@ terraform {
     encrypt = true
   }
 }
-
