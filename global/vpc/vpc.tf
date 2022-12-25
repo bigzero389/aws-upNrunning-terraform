@@ -11,7 +11,8 @@ variable "region" {
 
 locals {
   ## 신규 VPC 를 구성하는 경우 Service 과 pem_file 를 새로 넣어야 한다.
-  Service = "dy-tf"
+  #Service = "dy-tf"
+  Service = "${var.cluster_name}"
   Creator = "dyheo"
   Group = "cloudteam"
 
