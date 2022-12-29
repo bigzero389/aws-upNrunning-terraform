@@ -194,10 +194,8 @@ data "terraform_remote_state" "db" {
   backend = "s3"
 
   config = {
-    #bucket = "dy-tf-state"
-    #key = "stage/data-stores/mysql/terraform.tfstate"
-    bucket = var.db_remote_state_bucket
-    key = var.db_remote_state_key
+    bucket = var.db_remote_state_bucket #bucket = "dy-tf-state"
+    key = var.db_remote_state_key       #key = "stage/data-stores/mysql/terraform.tfstate"
     region = "ap-northeast-2"
   }
 }
@@ -207,20 +205,20 @@ data "template_file" "user_data" {
   template = file("user-data.sh")
 
   vars = {
-    server_port = var.server_port
+    server_port = var.server_port # 8080
     db_address = data.terraform_remote_state.db.outputs.address
     db_port = data.terraform_remote_state.db.outputs.port
   }
 }
 
 # terraform 백엔드 구성
-terraform {
-  backend "s3" {
-    bucket = "dy-tf-state"
-    key = "modules/services/webserver-cluster/terraform.tfstate"
-    region = "ap-northeast-2"
+# terraform {
+#   backend "s3" {
+#     bucket = "dy-tf-state"
+#     key = "modules/services/webserver-cluster/terraform.tfstate"
+#     region = "ap-northeast-2"
 
-    dynamodb_table = "dy-tf-locks"
-    encrypt = true
-  }
-}
+#     dynamodb_table = "dy-tf-locks"
+#     encrypt = true
+#   }
+# }

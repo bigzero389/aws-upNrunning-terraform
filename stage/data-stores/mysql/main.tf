@@ -2,22 +2,17 @@ provider "aws" {
   region = "ap-northeast-2"
 }
 
-resource "aws_db_instance" "example" {
-  identifier_prefix = "dy-tf"
-  engine = "mysql"
-  allocated_storage = 10
-  instance_class = "db.t2.micro"
-  db_name = "dy_tf_ex_database"
-  username = "admin"
+module "mysql" {
+  source = "../../../modules/data-stores/mysql"
 
-  # password = data.aws_secretsmanager_secret_version.db_password.secrete_string
-  password = var.db_password  # gjeodud01, 특수문자안됨
+  db_password = var.password
+  cluster_name = "dy-tf-stage"
+  instance_type = "db.t2.micro"
+  admin_username = "admin"
+
+  # db_remote_state_bucket = "dy-tf-state"
+  # db_remote_state_key = "stage/data-stores/mysql/terraform.tfstate"
 }
-
-# AWS Secret Manager 에 보안값을 넣고 읽어들여서 사용한다.
-# data "aws_secretsmanager_secret_version" "db_password" {
-#   secret_id = "mysql-master-password-stage"
-# }
 
 terraform {
   backend "s3" {
@@ -29,3 +24,4 @@ terraform {
     encrypt = true
   }
 }
+
