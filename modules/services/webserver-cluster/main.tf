@@ -52,13 +52,17 @@ resource "aws_security_group_rule" "service_out" {
 resource "aws_security_group" "instance" {
   name = "${var.cluster_name}-sg-instance"
   vpc_id = data.aws_vpc.default.id
+}
 
-  ingress {
-    from_port = local.ssh_port
-    to_port = local.ssh_port
-    protocol = local.tcp_protocol
-    cidr_blocks = [local.work_cidr, local.home_cidr]
-  }
+resource "aws_security_group_rule" "ssh" {
+  type = "ingress"
+
+  from_port = local.ssh_port
+  to_port = local.ssh_port
+  protocol = local.tcp_protocol
+  cidr_blocks = [local.work_cidr, local.home_cidr] 
+
+  security_group_id = aws_security_group.instance.id
 }
 
 data "aws_instances" "example" {

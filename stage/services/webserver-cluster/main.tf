@@ -17,6 +17,18 @@ module "webserver_cluster" {
   db_remote_state_key = "stage/data-stores/mysql/terraform.tfstate" # stage
 }
 
+# test port open in alb
+resource "aws_security_group_rule" "allow_testing_inbound" {
+  type = "ingress"
+
+  from_port = 12345
+  to_port = 12345
+  protocol = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]
+
+  security_group_id = module.webserver_cluster.alb_security_group_id
+}
+
 # terraform 백엔드 구성
 terraform {
   backend "s3" {
