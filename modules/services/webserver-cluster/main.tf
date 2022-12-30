@@ -6,7 +6,7 @@ locals {
   tcp_protocol = "tcp"
   http_protocol = "HTTP"
   https_protocol = "HTTPS"
-  all_ips = ["0.0.0.0/32"]
+  all_ips = ["0.0.0.0/0"]
   home_cidr = "125.177.68.23/32"
   work_cidr = "211.206.114.80/32"
 }
@@ -74,7 +74,7 @@ resource "aws_launch_configuration" "example" {
   image_id  = "ami-06eea3cd85e2db8ce"
   security_groups = [aws_security_group.instance.id]
   #key_name = "dy-cloud-dev.pem"
-  key_name = "dy-cloud-dev"
+  key_name = var.key_pair
 	instance_type = var.instance_type
  
   # user_data = <<-EOF
@@ -178,15 +178,15 @@ resource "aws_lb_target_group" "asg" {
   protocol = local.http_protocol
   vpc_id = data.aws_vpc.default.id
 
-  health_check {
-    path = "/"
-    protocol = "HTTP"
-    matcher = "200"
-    interval = 15
-    timeout = 3
-    healthy_threshold = 2
-    unhealthy_threshold = 2
-  }
+  # health_check {
+  #   path = "/"
+  #   protocol = "HTTP"
+  #   matcher = "200"
+  #   interval = 30
+  #   timeout = 30
+  #   healthy_threshold = 2
+  #   unhealthy_threshold = 10
+  # }
 }
 
 # db 관련 정보 불러오기 데이터소스.

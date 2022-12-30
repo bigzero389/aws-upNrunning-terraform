@@ -6,6 +6,7 @@ module "webserver_cluster" {
   source = "../../../modules/services/webserver-cluster"
   cluster_name = "dy-tf-stage"
   instance_type = "t2.micro"
+  key_pair = "dy-tf-dev"
   server_port = 8080
   min_size = 2
   max_size = 2

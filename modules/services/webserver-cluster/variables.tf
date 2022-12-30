@@ -14,6 +14,11 @@ variable "instance_type" {
   type = string
 }
 
+variable "key_pair" {
+  description = "The EC2 key pair(e.g. dy-tf-dev)"
+  type = string
+}
+
 variable "min_size" {
   description = "The minimum number of EC2 instance in the ASG"
   type = number
