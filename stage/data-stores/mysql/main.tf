@@ -6,7 +6,7 @@ module "mysql" {
   source = "../../../modules/data-stores/mysql"
 
   db_password = var.password
-  cluster_name = "dy-tf-stage"
+  cluster_name = "dy-tf-stage" # stage
   instance_type = "db.t2.micro"
   admin_username = "admin"
 
@@ -17,7 +17,7 @@ module "mysql" {
 terraform {
   backend "s3" {
     bucket = "dy-tf-state"
-    key = "stage/data-stores/mysql/terraform.tfstate"
+    key = "stage/data-stores/mysql/terraform.tfstate" # stage
     region = "ap-northeast-2"
 
     dynamodb_table = "dy-tf-locks"

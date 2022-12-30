@@ -4,7 +4,8 @@ provider "aws" {
 
 module "webserver_cluster" {
   source = "../../../modules/services/webserver-cluster"
-  cluster_name = "dy-tf-stage"
+
+  cluster_name = "dy-tf-stage"  # stage
   instance_type = "t2.micro"
   key_pair = "dy-tf-dev"
   server_port = 8080
@@ -13,7 +14,7 @@ module "webserver_cluster" {
 
   # db reference info
   db_remote_state_bucket = "dy-tf-state"
-  db_remote_state_key = "stage/data-stores/mysql/terraform.tfstate"
+  db_remote_state_key = "stage/data-stores/mysql/terraform.tfstate" # stage
 }
 
 # terraform 백엔드 구성

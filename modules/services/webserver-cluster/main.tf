@@ -109,25 +109,30 @@ resource "aws_autoscaling_group" "example" {
 }
 
 resource "aws_security_group" "alb" {
-  # name = "dy-tf-alb"
-  name = "${var.cluster_name}-alb"
-
   vpc_id = data.aws_vpc.default.id
+  name = "${var.cluster_name}-alb" # name = "dy-tf-alb"
+}
 
-  # permission traffic
-  ingress {
-    from_port = local.http_port
-    to_port = local.http_port
-    protocol = local.tcp_protocol
-    cidr_blocks = local.all_ips
-  }
+resource "aws_security_group_rule" "allow_http_inbound" {
+  type = "ingress"
 
-  egress {
-    from_port = 0
-    to_port = 0
-    protocol = local.any_protocol
-    cidr_blocks = local.all_ips
-  }
+  from_port = local.http_port
+  to_port = local.http_port
+  protocol = local.tcp_protocol
+  cidr_blocks = local.all_ips
+
+  security_group_id = aws_security_group.alb.id
+}
+
+resource "aws_security_group_rule" "allow_http_inbound" {
+  type = "egress"
+
+  from_port = 0
+  to_port = 0
+  protocol = local.any_protocol
+  cidr_blocks = local.all_ips
+
+  security_group_id = aws_security_group.alb.id
 }
 
 # ALB setting
@@ -202,7 +207,7 @@ data "terraform_remote_state" "db" {
 
 # db 관련 정보 쉘 파일로 전달.
 data "template_file" "user_data" {
-  template = file("user-data.sh")
+  template = file("${path.module}/user-data.sh")
 
   vars = {
     server_port = var.server_port # 8080
