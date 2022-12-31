@@ -128,7 +128,7 @@ resource "aws_security_group_rule" "allow_http_inbound" {
   security_group_id = aws_security_group.alb.id
 }
 
-resource "aws_security_group_rule" "allow_http_inbound" {
+resource "aws_security_group_rule" "allow_http_outbound" {
   type = "egress"
 
   from_port = 0
