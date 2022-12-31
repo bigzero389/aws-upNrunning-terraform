@@ -3,8 +3,8 @@ provider "aws" {
 }
 
 module "mysql" {
-  # source = "git@github.com:largezero/tf-upNrunning//data-stores/mysql?ref=v0.0.2"
-  source = "../../../../modules/data-stores/mysql"
+  source = "git@github.com:largezero/tf-upNrunning//modules/data-stores/mysql?ref=v0.0.2"
+  # source = "../../../../modules/data-stores/mysql"
 
   db_password = var.password
   cluster_name = "dy-tf-stage" # stage
