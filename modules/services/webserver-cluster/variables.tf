@@ -29,6 +29,12 @@ variable "max_size" {
   type = number
 }
 
+variable "custom_tags" {
+  description = "Custom tags to set on the Instances in the ASG"
+  type = map(string)
+  default = {}
+}
+
 variable "db_remote_state_bucket" {
   description = "The name of the s3 bucket for the database's remote state"
   type = string

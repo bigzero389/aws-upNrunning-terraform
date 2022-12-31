@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 module "webserver_cluster" {
-  source = "../../../modules/services/webserver-cluster"
+  source = "../../../../modules/services/webserver-cluster"
 
   cluster_name = "dy-tf-prod" # prod
   instance_type = "m4.large"
@@ -15,6 +15,11 @@ module "webserver_cluster" {
   # db reference info
   db_remote_state_bucket = "dy-tf-state"
   db_remote_state_key = "prod/data-stores/mysql/terraform.tfstate" # prod
+
+  custom_tags = {
+    Owner = "bigzero-tf"
+    DeployedBy = "Terraform"
+  }
 }
 
 resource "aws_autoscaling_schedule" "scale_out_during_business_hours" {

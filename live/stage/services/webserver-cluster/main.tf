@@ -3,8 +3,8 @@ provider "aws" {
 }
 
 module "webserver_cluster" {
-  source = "git@github.com:largezero/tf-upNrunning//modules/services/webserver-cluster?ref=v0.0.2"
-  # source = "../../../../modules/services/webserver-cluster"
+  # source = "git@github.com:largezero/tf-upNrunning//modules/services/webserver-cluster?ref=v0.0.2"
+  source = "../../../../modules/services/webserver-cluster"
 
   cluster_name = "dy-tf-stage"  # stage
   instance_type = "t2.micro"
