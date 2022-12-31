@@ -11,6 +11,9 @@ module "webserver_cluster" {
   server_port = 8080
   min_size = 2
   max_size = 10
+  enable_autoscaling = true
+  give_user_cloudwatch_full_access = false
+  enable_new_user_data = false
 
   # db reference info
   db_remote_state_bucket = "dy-tf-state"
@@ -20,26 +23,6 @@ module "webserver_cluster" {
     Owner = "bigzero-tf"
     DeployedBy = "Terraform"
   }
-}
-
-resource "aws_autoscaling_schedule" "scale_out_during_business_hours" {
-  scheduled_action_name = "scale-out-during-business-hours"
-  min_size = 2
-  max_size = 10
-  desired_capacity = 5
-  recurrence = "0 9 * * *"
-
-  autoscaling_group_name = module.webserver_cluster.asg_name
-}
-
-resource "aws_autoscaling_schedule" "scale_in_at_night" {
-  scheduled_action_name = "scale-in-at-night"
-  min_size = 2
-  max_size = 10
-  desired_capacity = 2
-  recurrence = "0 17 * * *"
-
-  autoscaling_group_name = module.webserver_cluster.asg_name
 }
 
 # terraform 백엔드 구성

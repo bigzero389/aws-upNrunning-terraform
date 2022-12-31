@@ -35,6 +35,21 @@ variable "custom_tags" {
   default = {}
 }
 
+variable "enable_autoscaling" {
+  description = "If set to true, enable auto scaling"
+  type = bool
+}
+
+variable "give_user_cloudwatch_full_access" {
+  description = "If true, user get full access to CloudWatch"
+  type = bool
+}
+
+variable "enable_new_user_data" {
+  description = "If set to true, use the new User Data script"
+  type = bool
+}
+
 variable "db_remote_state_bucket" {
   description = "The name of the s3 bucket for the database's remote state"
   type = string

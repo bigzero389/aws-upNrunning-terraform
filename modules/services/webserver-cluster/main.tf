@@ -87,7 +87,13 @@ resource "aws_launch_configuration" "example" {
   #             nohup busybox httpd -f -p ${var.server_port} &
   #             EOF
   # template file 을 읽어들인 렌더링 결과를 input 으로 받음.
-  user_data = data.template_file.user_data.rendered
+  
+  # user_data = data.template_file.user_data.rendered
+  user_data = (
+    length(data.template_file.user_data[*]) > 0 
+      ? data.template_file.user_data[0].rendered
+      : data.template_file.user_data_new[0].rendered
+  )
 
   lifecycle {
     create_before_destroy = true
@@ -119,6 +125,30 @@ resource "aws_autoscaling_group" "example" {
       propagate_at_launch = true
     }
   }
+}
+
+resource "aws_autoscaling_schedule" "scale_out_during_business_hours" {
+  count = var.enable_autoscaling ? 1 : 0
+
+  scheduled_action_name = "scale-out-during-business-hours"
+  min_size = 2
+  max_size = 10
+  desired_capacity = 5
+  recurrence = "0 9 * * *"
+
+  autoscaling_group_name = aws_autoscaling_group.example.name
+}
+
+resource "aws_autoscaling_schedule" "scale_in_at_night" {
+  count = var.enable_autoscaling ? 1 : 0
+
+  scheduled_action_name = "scale-in-at-night"
+  min_size = 2
+  max_size = 10
+  desired_capacity = 2
+  recurrence = "0 17 * * *"
+
+  autoscaling_group_name = aws_autoscaling_group.example.name
 }
 
 resource "aws_security_group" "alb" {
@@ -196,15 +226,51 @@ resource "aws_lb_target_group" "asg" {
   protocol = local.http_protocol
   vpc_id = data.aws_vpc.default.id
 
-  # health_check {
-  #   path = "/"
-  #   protocol = "HTTP"
-  #   matcher = "200"
-  #   interval = 30
-  #   timeout = 30
-  #   healthy_threshold = 2
-  #   unhealthy_threshold = 10
-  # }
+  health_check {
+    path = "/"
+    protocol = "HTTP"
+    matcher = "200"
+    interval = 30
+    timeout = 30
+    healthy_threshold = 2
+    unhealthy_threshold = 10
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "high_cpu_utilization" {
+  alarm_name = "${var.cluster_name}-high-cpu-utilization"
+  namespace = "AWS/EC2"
+  metric_name = "CPUUtilization"
+
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.example.name
+  }
+
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods = 1
+  period = 300 # second, 5 min
+  statistic = "Average"
+  threshold = 90 
+  unit = "Percent"
+}
+
+resource "aws_cloudwatch_metric_alarm" "low_cpu_credit_balance" {
+  count = format("%.1s", var.instance_type) == "t" ? 1 : 0  # instance type 이 t 시리즈들만 CPU credit 이 있기 때문에 필터링함.
+
+  alarm_name = "${var.cluster_name}-low-cpu-credit-balance"
+  namespace = "AWS/EC2"
+  metric_name = "CPUCreditBalance"
+
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.example.name
+  }
+
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods = 1
+  period = 300 # second, 5 min
+  statistic = "Minimum"
+  threshold = 10 
+  unit = "Count" 
 }
 
 # db 관련 정보 불러오기 데이터소스.
@@ -218,14 +284,24 @@ data "terraform_remote_state" "db" {
   }
 }
 
-# db 관련 정보 쉘 파일로 전달.
+# server port 및 db 관련 정보 쉘 파일로 전달.
 data "template_file" "user_data" {
+  count = var.enable_new_user_data ? 0 : 1
   template = file("${path.module}/user-data.sh")
 
   vars = {
     server_port = var.server_port # 8080
     db_address = data.terraform_remote_state.db.outputs.address
     db_port = data.terraform_remote_state.db.outputs.port
+  }
+}
+
+data "template_file" "user_data_new" {
+  count = var.enable_new_user_data ? 1 : 0
+  template = file("${path.module}/user-data-new.sh")
+
+  vars = {
+    server_port = var.server_port # 8080
   }
 }
 
@@ -240,3 +316,39 @@ data "template_file" "user_data" {
 #     encrypt = true
 #   }
 # }
+
+# cloudwatch read only
+resource "aws_iam_policy" "cloudwatch_read_only" {
+  count = var.give_user_cloudwatch_full_access ? 0 : 1
+  
+  name = "${var.cluster_name}-cloudwatch-read-only"
+  policy = data.aws_iam_policy_document.cloudwatch_read_only.json
+}
+
+data "aws_iam_policy_document" "cloudwatch_read_only" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "cloudwatch:Describe*",
+      "cloudwatch:Get*",
+      "cloudwatch:List*"
+    ]
+    resources = ["*"]
+  }
+}
+
+# cloudwatch full access
+resource "aws_iam_policy" "cloudwatch_full_access" {
+  count = var.give_user_cloudwatch_full_access ? 1 : 0
+
+  name = "${var.cluster_name}-cloudwatch-full-access"
+  policy = data.aws_iam_policy_document.cloudwatch_full_access.json
+}
+
+data "aws_iam_policy_document" "cloudwatch_full_access" {
+  statement {
+    effect = "Allow"
+    actions = ["cloudwatch:*"]
+    resources = ["*"]
+  }
+}

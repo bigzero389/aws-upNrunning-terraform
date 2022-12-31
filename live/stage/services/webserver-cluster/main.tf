@@ -12,6 +12,9 @@ module "webserver_cluster" {
   server_port = 8080
   min_size = 2
   max_size = 2
+  enable_autoscaling = false
+  give_user_cloudwatch_full_access = true
+  enable_new_user_data = true
 
   # db reference info
   db_remote_state_bucket = "dy-tf-state"
