@@ -10,9 +10,10 @@ variable "region" {
 }
 
 locals {
-  ## 신규 VPC 를 구성하는 경우 Service 과 pem_file 를 새로 넣어야 한다.
-  #Service = "dy-tf"
-  Service = "${var.cluster_name}"
+  ## 신규 VPC 를 구성하는 경우 System 과 pem_file 를 새로 넣어야 한다.
+  # CLUSTER_NAME = "dy-tf"
+  # ENVIRONMENT= "dev"
+  System = "${var.cluster_name}-${var.environment}"
   Creator = "dyheo"
   Group = "cloudteam"
 
@@ -44,7 +45,7 @@ resource "aws_vpc" "this" {
   enable_dns_hostnames = true
 
   tags = {
-    Name = "${local.Service}-vpc",
+    Name = "${local.System}-vpc",
     Creator= "${local.Creator}",
     Group = "${local.Group}"
   }
@@ -54,7 +55,7 @@ resource "aws_internet_gateway" "this" {
   vpc_id = "${aws_vpc.this.id}"
 
   tags = {
-    Name = "${local.Service}-igw",
+    Name = "${local.System}-igw",
     Creator= "${local.Creator}",
     Group = "${local.Group}"
   }
@@ -69,7 +70,7 @@ resource "aws_subnet" "public" {
   availability_zone       = "${element(keys(local.public_subnets), count.index)}"
 
   tags = {
-    Name = "${local.Service}-sb-public-${element(values(local.azs), count.index)}",
+    Name = "${local.System}-sb-public-${element(values(local.azs), count.index)}",
     Creator= "${local.Creator}",
     Group = "${local.Group}"
   }
@@ -84,7 +85,7 @@ resource "aws_subnet" "private" {
   availability_zone       = "${element(keys(local.private_subnets), count.index)}"
 
   tags = {
-    Name = "${local.Service}-sb-private-${element(values(local.azs), count.index)}",
+    Name = "${local.System}-sb-private-${element(values(local.azs), count.index)}",
     Creator= "${local.Creator}",
     Group = "${local.Group}"
   }
@@ -94,7 +95,7 @@ resource "aws_default_route_table" "public" {
   default_route_table_id = "${aws_vpc.this.main_route_table_id}"
 
   tags = {
-    Name = "${local.Service}-public",
+    Name = "${local.System}-public",
     Creator= "${local.Creator}",
     Group = "${local.Group}"
   }
@@ -121,7 +122,7 @@ resource "aws_route_table" "private" {
   vpc_id = "${aws_vpc.this.id}"
 
   tags = {
-    Name = "${local.Service}-private",
+    Name = "${local.System}-private",
     Creator= "${local.Creator}",
     Group = "${local.Group}"
   }
@@ -137,7 +138,7 @@ resource "aws_eip" "nat" {
   vpc = true
 
   tags = {
-    Name = "${local.Service}-eip",
+    Name = "${local.System}-eip",
     Creator= "${local.Creator}",
     Group = "${local.Group}"
   }
@@ -148,7 +149,7 @@ resource "aws_nat_gateway" "this" {
   subnet_id     = "${aws_subnet.public.0.id}"
 
   tags = {
-    Name = "${local.Service}-nat-gw",
+    Name = "${local.System}-nat-gw",
     Creator= "${local.Creator}",
     Group = "${local.Group}"
   }
@@ -171,7 +172,7 @@ output "aws_vpc" {
 terraform {
   backend "s3" {
     bucket = "dy-tf-state"
-    key = "stage/vpc/terraform.tfstate"
+    key = "stg/vpc/terraform.tfstate"
     region = "ap-northeast-2"
 
     dynamodb_table = "dy-tf-locks"

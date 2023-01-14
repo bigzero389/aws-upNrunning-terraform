@@ -1,8 +1,3 @@
-variable "db_password" {
-  description = "The password of the database. min length 8 character (e.g. gjeodud01)"
-  type = string
-}
-
 variable "cluster_name" {
   description = "The name to use for all the cluster resources (e.g. dy-tf-stage)"
   type = string
@@ -10,6 +5,11 @@ variable "cluster_name" {
 
 variable "environment" {
   description = "dev stg prd"
+  type = string
+}
+
+variable "vpc_id" {
+  description = "vpc id"
   type = string
 }
 
@@ -25,14 +25,8 @@ variable "admin_username" {
   # default = "admin"
 }
 
-# variable "db_remote_state_bucket" {
-#   description = "The name of the s3 bucket for the database's remote state"
-#   type = string
-#   # default = "dy-tf-state"
-# }
+variable "db_password" {
+  description = "The password of the database. min length 8 character (e.g. gjeodud01)"
+  type = string
+}
 
-# variable "db_remote_state_key" {
-#   description = "The path for the database'sremote state in s3"
-#   type = string
-#   # default = "modules/data-stores/mysql/terraform.tfstat"
-# }

@@ -14,6 +14,7 @@ locals {
   work_cidr = "211.206.114.80/32"
 
   system_name = "${var.cluster_name}-${var.environment}"
+  vpc_id = var.vpc_id
 }
 
 data "aws_vpc" "default" {
@@ -25,7 +26,7 @@ data "aws_vpc" "default" {
 
 # TAG NAME 으로 subnet 을 가져온다.
 data "aws_subnets" "default" {
-  #vpc_id = data.aws_vpc.default.id ## deprecated option
+  #vpc_id = var.vpc_id ## deprecated option
   filter {
     name = "tag:Name"
     values = ["${local.system_name}-sb-public-*"]
@@ -33,7 +34,7 @@ data "aws_subnets" "default" {
   }
   filter {
     name = "vpc-id"
-    values = [data.aws_vpc.default.id]
+    values = [var.vpc_id]
   }
 }
 
@@ -50,7 +51,7 @@ resource "aws_db_subnet_group" "example" {
 
 resource "aws_security_group" "db" {
   name = "${local.system_name}-sg-db"
-  vpc_id = data.aws_vpc.default.id
+  vpc_id = var.vpc_id
 
   ingress {
     from_port = local.db_service_port
