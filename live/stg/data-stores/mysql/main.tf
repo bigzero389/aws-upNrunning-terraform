@@ -19,7 +19,7 @@ module "mysql" {
 terraform {
   backend "s3" {
     bucket = "dy-tf-state"
-    key = "stage/data-stores/mysql/terraform.tfstate" # stage
+    key = "stg/data-stores/mysql/terraform.tfstate" # stage
     region = "ap-northeast-2"
 
     dynamodb_table = "dy-tf-locks"
