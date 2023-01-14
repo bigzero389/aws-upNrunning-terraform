@@ -12,12 +12,14 @@ locals {
   all_ips = ["0.0.0.0/32"]
   home_cidr = "125.177.68.23/32"
   work_cidr = "211.206.114.80/32"
+
+  system_name = "${var.cluster_name}-${var.environment}"
 }
 
 data "aws_vpc" "default" {
   #default = true
   tags = {
-    Name = "${var.cluster_name}-vpc"
+    Name = "${local.system_name}-vpc"
   }
 }
 
@@ -26,8 +28,8 @@ data "aws_subnets" "default" {
   #vpc_id = data.aws_vpc.default.id ## deprecated option
   filter {
     name = "tag:Name"
-    values = ["${var.cluster_name}-sb-public-*"]
-    # values = ["${var.cluster_name}-sb-private-*"]
+    values = ["${local.system_name}-sb-public-*"]
+    # values = ["${local.system_name}-sb-private-*"]
   }
   filter {
     name = "vpc-id"
@@ -37,17 +39,17 @@ data "aws_subnets" "default" {
 
 # Create DB Subnet with private db subnet created with VPC
 resource "aws_db_subnet_group" "example" {
-  name        = "${var.cluster_name}-sb-db"
+  name        = "${local.system_name}-sb-db"
   description = "The subnets used for dayone RDS deployments"
   subnet_ids  = data.aws_subnets.default.ids
 
   tags = {
-    Name = "${var.cluster_name}-sb-db"
+    Name = "${local.system_name}-sb-db"
   }
 }
 
 resource "aws_security_group" "db" {
-  name = "${var.cluster_name}-sg-db"
+  name = "${local.system_name}-sg-db"
   vpc_id = data.aws_vpc.default.id
 
   ingress {
@@ -59,7 +61,7 @@ resource "aws_security_group" "db" {
 }
 
 resource "aws_db_instance" "example" {
-  identifier_prefix = "${var.cluster_name}-" # identifier_prefix = "dy-tf-stage_"
+  identifier_prefix = "${local.system_name}-" # identifier_prefix = "dy-tf-stage_"
   engine = "mysql"
   allocated_storage = 10
   instance_class = var.instance_type    # instance_class = "db.t2.micro"

@@ -8,6 +8,11 @@ variable "cluster_name" {
   type = string
 }
 
+variable "environment" {
+  description = "dev stg prd"
+  type = string
+}
+
 variable "instance_type" {
   description = "The type of DB instances to run (e.g. db.t2.micro)"
   type = string
