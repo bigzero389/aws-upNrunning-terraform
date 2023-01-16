@@ -10,6 +10,7 @@ module "asg" {
   source = "../../modules/cluster/asg-rolling-deploy"
 
   vpc_id = data.aws_vpc.default.id
+  subnet_ids = data.aws_subnets.default.ids
 
   cluster_name = var.cluster_name
   environment = var.environment
@@ -20,8 +21,6 @@ module "asg" {
   min_size = 1
   max_size = 1
   enable_autoscaling = false
-  
-  subnet_ids = data.aws_subnets.default.ids
 
   give_user_cloudwatch_full_access = true
 

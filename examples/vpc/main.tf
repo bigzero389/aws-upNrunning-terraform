@@ -13,7 +13,7 @@ module "vpc" {
 
   region = var.region
   cluster_name = "dy-tf"
-  environment = "ex"
+  environment = "ex"  # dev stg prd
   creator = "dyheo"
   group = "cloudteam"
   azs = {
@@ -31,6 +31,10 @@ module "vpc" {
     "${var.region}c" = "10.77.113.0/24"
   }
   cidr_block = "10.77.0.0/16"
+}
+
+output "aws_vpc_tags" {
+  value = module.vpc.aws_vpc_tags_all
 }
 
 output "aws_vpc_id" {
